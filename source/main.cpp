@@ -22,6 +22,18 @@ void ShutDown(SDL_Window* pWindow)
 
 int main(int argc, char* args[])
 {
+	// Dot & Cross test
+#if 0
+	float dotResult{};
+	dotResult = Vector3::Dot(Vector3::UnitX, Vector3::UnitX);  // (1) Same Direction
+	dotResult = Vector3::Dot(Vector3::UnitX, -Vector3::UnitX); // (-1) Opposite Direction
+	dotResult = Vector3::Dot(Vector3::UnitX, Vector3::UnitY); // (0) Perpendicular
+
+	Vector3 crossResult{}; //Left-Handed!
+	crossResult = Vector3::Cross(Vector3::UnitZ, Vector3::UnitX); //(0,1,0) UnitY
+	crossResult = Vector3::Cross(Vector3::UnitX, Vector3::UnitZ); //(0,-1,0) -UnitY
+#endif
+
 	//Unreferenced parameters
 	(void)argc;
 	(void)args;
@@ -33,7 +45,7 @@ int main(int argc, char* args[])
 	const uint32_t height = 480;
 
 	SDL_Window* pWindow = SDL_CreateWindow(
-		"RayTracer - **Insert Name**",
+		"RayTracer - Messely, Rei",
 		SDL_WINDOWPOS_UNDEFINED,
 		SDL_WINDOWPOS_UNDEFINED,
 		width, height, 0);
