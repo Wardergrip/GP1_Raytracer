@@ -26,18 +26,18 @@ namespace dae
 			}
 			else if (D > 0) // 2 hits
 			{
-				float t{(-B - sqrtf(D)/(2*A))};
-				if (t > ray.min)
+				float t{ ((- B - sqrtf(D)) / (2 * A))};
+				if (t < ray.min)
 				{
-					t = (-B + sqrtf(D)/(2*A));
-					if (t > ray.min && t < ray.max) 
-					{
-						hitRecord.didHit = true;
-						hitRecord.materialIndex = sphere.materialIndex;
-						hitRecord.origin = ray.origin + (t * ray.direction);
-						hitRecord.t = t;
-						return true;
-					}
+					t = ((- B + sqrtf(D)) / (2 * A));
+				}
+				if (t > ray.min && t < ray.max)
+				{
+					hitRecord.didHit = true;
+					hitRecord.materialIndex = sphere.materialIndex;
+					hitRecord.origin = ray.origin + (t * ray.direction);
+					hitRecord.t = t;
+					return true;
 				}
 				hitRecord.didHit = false;
 				return false;
