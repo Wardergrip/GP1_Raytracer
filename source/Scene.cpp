@@ -39,6 +39,14 @@ namespace dae {
 				smallestTrecord = hitRecord;
 			}
 		}
+		for (const Plane& plane : m_PlaneGeometries)
+		{
+			GeometryUtils::HitTest_Plane(plane, ray, hitRecord);
+			if (hitRecord.t < smallestTrecord.t)
+			{
+				smallestTrecord = hitRecord;
+			}
+		}
 
 		closestHit = smallestTrecord;
 		return;
