@@ -50,6 +50,7 @@ void Renderer::Render(Scene* pScene) const
 			Vector3 rayDirection{calculationX,calculationY,1};
 			rayDirection.Normalize();
 
+			// RAYCALCS ^
 			Ray viewRay(cameraOrigin, rayDirection);
 
 			// Color to write to the color buffer (default is black)
@@ -57,19 +58,14 @@ void Renderer::Render(Scene* pScene) const
 
 			// Hitrecord containing more information about a potential hit
 			HitRecord closestHit{};
-
-			//TEMP SPHERE (default material = solid red - id=0)
-			Sphere testSphere({ 0.f,0.f,100.f }, 50.f, 0);
-
-			// Perform Sphere HitTest
-			GeometryUtils::HitTest_Sphere(testSphere, viewRay, closestHit);
+			pScene->GetClosestHit(viewRay, closestHit);
 
 			if (closestHit.didHit)
 			{
-				//finalColor = materials[closestHit.materialIndex]->Shade();
+				finalColor = materials[closestHit.materialIndex]->Shade();
 
-				const float scaled_t = (closestHit.t - 50.f) / 40.f;
-				finalColor = { scaled_t,scaled_t,scaled_t };
+				/*const float scaled_t = (closestHit.t - 50.f) / 40.f;
+				finalColor = { scaled_t,scaled_t,scaled_t };*/
 			}
 
 			//Update Color in Buffer
