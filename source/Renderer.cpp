@@ -58,13 +58,17 @@ void Renderer::Render(Scene* pScene) const
 
 			// Hitrecord containing more information about a potential hit
 			HitRecord closestHit{};
+			/*Plane testPlane{ {0,-50,0},{0,1,0},0 };
+			GeometryUtils::HitTest_Plane(testPlane, viewRay, closestHit);*/
 			pScene->GetClosestHit(viewRay, closestHit);
 
 			if (closestHit.didHit)
 			{
 				finalColor = materials[closestHit.materialIndex]->Shade();
 
-				/*const float scaled_t = (closestHit.t - 50.f) / 40.f;
+				const float scaled_t = (closestHit.t - 50.f) / 40.f;
+				finalColor = { finalColor.r*scaled_t,finalColor.g*scaled_t,finalColor.b* scaled_t };
+				/*const float scaled_t = closestHit.t / 500.f;
 				finalColor = { scaled_t,scaled_t,scaled_t };*/
 			}
 
