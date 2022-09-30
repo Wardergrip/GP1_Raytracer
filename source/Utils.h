@@ -36,7 +36,7 @@ namespace dae
 					hitRecord.didHit = true;
 					hitRecord.materialIndex = sphere.materialIndex;
 					hitRecord.origin = ray.origin + (t * ray.direction);
-					hitRecord.normal = ray.direction.Normalized();
+					hitRecord.normal = (hitRecord.origin - sphere.origin).Normalized();
 					hitRecord.t = t;
 					return true;
 				}
@@ -121,7 +121,7 @@ namespace dae
 			switch (light.type)
 			{
 			case LightType::Point:
-				return (origin - light.origin);
+				return (light.origin - origin);
 				break;
 			case LightType::Directional:
 				return ((light.origin - origin) * FLT_MAX);

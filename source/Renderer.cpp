@@ -73,14 +73,11 @@ void Renderer::Render(Scene* pScene) const
 
 				for (size_t i{0}; i < lights.size(); ++i)
 				{
-					Vector3 lightDir = LightUtils::GetDirectionToLight(lights[i],closestHit.origin + (closestHit.normal * 0.1f));
+					Vector3 lightDir = LightUtils::GetDirectionToLight(lights[i],closestHit.origin + (closestHit.normal * 0.001f));
 					const float lightrayMagnitude{ lightDir.Normalize() };
-					Ray lightRay{lights[i].origin,lightDir};
-					if (lightrayMagnitude > lightRay.max)
-					{
-						
-					}
-					else if (pScene->DoesHit(lightRay))
+					Ray lightRay{closestHit.origin + (closestHit.normal * 0.001f),lightDir};
+					lightRay.max = lightrayMagnitude;
+					if (pScene->DoesHit(lightRay))
 					{
 						finalColor *= 0.5f;
 					}
