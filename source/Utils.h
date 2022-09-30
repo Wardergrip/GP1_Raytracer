@@ -36,6 +36,7 @@ namespace dae
 					hitRecord.didHit = true;
 					hitRecord.materialIndex = sphere.materialIndex;
 					hitRecord.origin = ray.origin + (t * ray.direction);
+					hitRecord.normal = ray.direction.Normalized();
 					hitRecord.t = t;
 					return true;
 				}
@@ -115,8 +116,18 @@ namespace dae
 	namespace LightUtils
 	{
 		//Direction from target to light
-		inline Vector3 GetDirectionToLight(const Light& light, const Vector3 origin)
+		inline Vector3 GetDirectionToLight(const Light& light, const Vector3& origin)
 		{
+			switch (light.type)
+			{
+			case LightType::Point:
+				return (origin - light.origin);
+				break;
+			case LightType::Directional:
+				return ((light.origin - origin) * FLT_MAX);
+				break;
+			}
+
 			//todo W3
 			assert(false && "No Implemented Yet!");
 			return {};

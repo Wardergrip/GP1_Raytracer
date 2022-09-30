@@ -34,6 +34,27 @@ namespace dae
 
 		Matrix CalculateCameraToWorld()
 		{
+			/*
+			- This function should return the Camera ONB matrix
+			- Calculate the right & up vector using the forward camera vector
+			- Combine to a matrix(also include origin) and return
+			*/
+
+			right = Vector3::Cross(Vector3::UnitY,forward).Normalized();
+			up = Vector3::Cross(forward,right).Normalized();
+			// https://gamedev.net/forums/topic/388559-getting-a-up-vector-from-only-having-a-forward-vector/.
+
+			Matrix cameraToWorld
+			{
+				right,
+				up,
+				forward,
+				origin
+			};
+			
+
+			return cameraToWorld;
+
 			//todo: W2
 			assert(false && "Not Implemented Yet");
 			return {};
@@ -41,15 +62,86 @@ namespace dae
 
 		void Update(Timer* pTimer)
 		{
+			const float fovChangingSpeed{ 25 };
+			const float baseMovementSpeed{ 0.5f };
+			float movementSpeed{ baseMovementSpeed };
+			const float rotationSpeed{ 1/32.f };
+
 			const float deltaTime = pTimer->GetElapsed();
 
 			//Keyboard Input
 			const uint8_t* pKeyboardState = SDL_GetKeyboardState(nullptr);
 
+#pragma region Shift
+			if (pKeyboardState[SDL_SCANCODE_LSHIFT] || pKeyboardState[SDL_SCANCODE_RSHIFT])
+			{
+				movementSpeed *= 4;
+			}
+#pragma endregion 
+
+#pragma region FovControls
+			if (pKeyboardState[SDL_SCANCODE_LEFT])
+			{
+				if (fovAngle > 10)
+				{
+					fovAngle -= fovChangingSpeed * deltaTime;
+				}
+			}
+			else if (pKeyboardState[SDL_SCANCODE_RIGHT])
+			{
+				if (fovAngle < 170)
+				{
+					fovAngle += fovChangingSpeed * deltaTime;
+				}
+			}
+#pragma endregion 
+
+#pragma region KeyboardOnly Controls
+			if (pKeyboardState[SDL_SCANCODE_W])
+			{
+				origin += forward * movementSpeed;
+			}
+			else if (pKeyboardState[SDL_SCANCODE_S])
+			{
+				origin -= forward * movementSpeed;
+			}
+			if (pKeyboardState[SDL_SCANCODE_D])
+			{
+				origin += right * movementSpeed;
+			}
+			else if (pKeyboardState[SDL_SCANCODE_A])
+			{
+				origin -= right * movementSpeed;
+			}
+#pragma endregion 
 
 			//Mouse Input
 			int mouseX{}, mouseY{};
 			const uint32_t mouseState = SDL_GetRelativeMouseState(&mouseX, &mouseY);
+
+#pragma region Mousebased Movement
+			// LMB
+			if (mouseState & SDL_BUTTON(SDL_BUTTON_LEFT))
+			{
+				// RMB
+				if (mouseState & SDL_BUTTON(SDL_BUTTON_RIGHT))
+				{
+					origin += right * (-mouseY * movementSpeed * deltaTime);
+				}
+				else
+				{
+					origin += forward * (-mouseY * movementSpeed * deltaTime);
+				}
+			}
+#pragma endregion
+
+#pragma region Rotation
+			if (mouseState & SDL_BUTTON(SDL_BUTTON_RIGHT))
+			{
+				forward = Matrix::CreateRotationY(mouseX * rotationSpeed).TransformVector(forward);
+				forward = Matrix::CreateRotationX(-mouseY * rotationSpeed).TransformVector(forward) ;
+			}
+#pragma endregion
 
 			//todo: W2
 			//assert(false && "Not Implemented Yet");

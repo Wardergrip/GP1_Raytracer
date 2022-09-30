@@ -27,6 +27,8 @@ void Renderer::Render(Scene* pScene) const
 	auto& materials = pScene->GetMaterials();
 	auto& lights = pScene->GetLights();
 
+	const Matrix cameraToWorld = camera.CalculateCameraToWorld();
+
 	for (int px{}; px < m_Width; ++px)
 	{
 		for (int py{}; py < m_Height; ++py)
@@ -43,12 +45,15 @@ void Renderer::Render(Scene* pScene) const
 			// Cameraspace
 			float screenWidth{ static_cast<float>(m_Width) }, screenHeight{ static_cast<float>(m_Height) };
 			float aspectRatio{ screenWidth / screenHeight };
-			Vector3 cameraOrigin{ 0, 0, 0 };
-			float calculationX = ((2 * ((px + 0.5f) / screenWidth) - 1) * aspectRatio);
-			float calculationY = 1 - (2 * (py + 0.5f) / screenHeight);
+			float fov{ tan(((camera.fovAngle * TO_RADIANS))/2.f) };
+			Vector3 cameraOrigin{ camera.origin };
+			float calculationX = ((2 * ((px + 0.5f) / screenWidth) - 1) * aspectRatio * fov);
+			float calculationY = (1 - (2 * (py + 0.5f) / screenHeight)) * fov;
 
 			Vector3 rayDirection{calculationX,calculationY,1};
 			rayDirection.Normalize();
+
+			rayDirection = cameraToWorld.TransformVector(rayDirection);
 
 			// RAYCALCS ^
 			Ray viewRay(cameraOrigin, rayDirection);
@@ -66,10 +71,20 @@ void Renderer::Render(Scene* pScene) const
 			{
 				finalColor = materials[closestHit.materialIndex]->Shade();
 
-				const float scaled_t = (closestHit.t - 50.f) / 40.f;
-				finalColor = { finalColor.r*scaled_t,finalColor.g*scaled_t,finalColor.b* scaled_t };
-				/*const float scaled_t = closestHit.t / 500.f;
-				finalColor = { scaled_t,scaled_t,scaled_t };*/
+				for (size_t i{0}; i < lights.size(); ++i)
+				{
+					Vector3 lightDir = LightUtils::GetDirectionToLight(lights[i],closestHit.origin + (closestHit.normal * 0.1f));
+					const float lightrayMagnitude{ lightDir.Normalize() };
+					Ray lightRay{lights[i].origin,lightDir};
+					if (lightrayMagnitude > lightRay.max)
+					{
+						
+					}
+					else if (pScene->DoesHit(lightRay))
+					{
+						finalColor *= 0.5f;
+					}
+				}
 			}
 
 			//Update Color in Buffer
