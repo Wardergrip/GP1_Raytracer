@@ -64,7 +64,7 @@ namespace dae
 			if (t > ray.min && t < ray.max)
 			{
 				hitRecord.origin = (ray.origin + ray.direction * t);
-				hitRecord.normal = Vector3::Cross(plane.normal, ray.direction);
+				hitRecord.normal = plane.normal;
 				hitRecord.materialIndex = plane.materialIndex;
 				hitRecord.t = t;
 				hitRecord.didHit = true;
@@ -135,6 +135,15 @@ namespace dae
 
 		inline ColorRGB GetRadiance(const Light& light, const Vector3& target)
 		{
+			switch (light.type)
+			{
+			case LightType::Point:
+				return {(light.color * light.intensity) / GetDirectionToLight(light,target).SqrMagnitude()};
+				break;
+			case LightType::Directional:
+				return {light.color * light.intensity};
+				break;
+			}
 			//todo W3
 			assert(false && "No Implemented Yet!");
 			return {};

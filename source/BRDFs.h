@@ -13,15 +13,15 @@ namespace dae
 		 */
 		static ColorRGB Lambert(float kd, const ColorRGB& cd)
 		{
+			return { (kd * cd) / PI};
 			//todo: W3
-			assert(false && "Not Implemented Yet");
 			return {};
 		}
 
 		static ColorRGB Lambert(const ColorRGB& kd, const ColorRGB& cd)
 		{
+			return { (kd * cd) / PI };
 			//todo: W3
-			assert(false && "Not Implemented Yet");
 			return {};
 		}
 
@@ -36,8 +36,16 @@ namespace dae
 		 */
 		static ColorRGB Phong(float ks, float exp, const Vector3& l, const Vector3& v, const Vector3& n)
 		{
+			Vector3 reflect = l.Reflect(l, n);
+			reflect.Normalize();
+			float alfa = Vector3::Dot(reflect, v);
+			float PSR{};
+			if (alfa > 0)
+			{
+				PSR = ks * (powf(alfa, exp));
+			}
+			return {PSR,PSR,PSR};
 			//todo: W3
-			assert(false && "Not Implemented Yet");
 			return {};
 		}
 
@@ -50,8 +58,8 @@ namespace dae
 		 */
 		static ColorRGB FresnelFunction_Schlick(const Vector3& h, const Vector3& v, const ColorRGB& f0)
 		{
+			return { f0 + ((ColorRGB{1,1,1} - f0) * powf((1 - Vector3::Dot(h, v)), 5)) };
 			//todo: W3
-			assert(false && "Not Implemented Yet");
 			return {};
 		}
 
@@ -64,8 +72,12 @@ namespace dae
 		 */
 		static float NormalDistribution_GGX(const Vector3& n, const Vector3& h, float roughness)
 		{
+			const float alfa = roughness * roughness;
+			const float alfaSqrd = alfa * alfa;
+			const float nhSqrd = (Vector3::Dot(n, h) * Vector3::Dot(n, h));
+			const float NormalDis = alfaSqrd / (PI * ((nhSqrd * (alfaSqrd - 1) + 1) * (nhSqrd * (alfaSqrd - 1) + 1)));
+			return NormalDis;
 			//todo: W3
-			assert(false && "Not Implemented Yet");
 			return {};
 		}
 
@@ -79,8 +91,10 @@ namespace dae
 		 */
 		static float GeometryFunction_SchlickGGX(const Vector3& n, const Vector3& v, float roughness)
 		{
+			float k = ((roughness * roughness + 1) * (roughness * roughness + 1)) / 8.0f;
+			float geometryFunc = Vector3::Dot(n, v) / (Vector3::Dot(n, v) * (1 - k) + k);
+			return geometryFunc;
 			//todo: W3
-			assert(false && "Not Implemented Yet");
 			return {};
 		}
 
@@ -95,7 +109,6 @@ namespace dae
 		static float GeometryFunction_Smith(const Vector3& n, const Vector3& v, const Vector3& l, float roughness)
 		{
 			//todo: W3
-			assert(false && "Not Implemented Yet");
 			return {};
 		}
 

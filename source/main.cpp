@@ -57,7 +57,7 @@ int main(int argc, char* args[])
 	const auto pTimer = new Timer();
 	const auto pRenderer = new Renderer(pWindow);
 
-	const auto pScene = new Scene_W2();
+	const auto pScene = new Scene_W3();
 	pScene->Initialize();
 
 	//Start loop
@@ -88,6 +88,7 @@ int main(int argc, char* args[])
 
 		//--------- Render ---------
 		pRenderer->Render(pScene);
+		pRenderer->Update(pTimer);
 
 		//--------- Timer ---------
 		pTimer->Update();

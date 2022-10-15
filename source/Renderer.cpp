@@ -9,6 +9,7 @@
 #include "Material.h"
 #include "Scene.h"
 #include "Utils.h"
+#include <iostream>
 
 using namespace dae;
 
@@ -63,23 +64,52 @@ void Renderer::Render(Scene* pScene) const
 
 			// Hitrecord containing more information about a potential hit
 			HitRecord closestHit{};
-			/*Plane testPlane{ {0,-50,0},{0,1,0},0 };
-			GeometryUtils::HitTest_Plane(testPlane, viewRay, closestHit);*/
 			pScene->GetClosestHit(viewRay, closestHit);
 
 			if (closestHit.didHit)
 			{
-				finalColor = materials[closestHit.materialIndex]->Shade();
-
 				for (size_t i{0}; i < lights.size(); ++i)
 				{
 					Vector3 lightDir = LightUtils::GetDirectionToLight(lights[i],closestHit.origin + (closestHit.normal * 0.001f));
 					const float lightrayMagnitude{ lightDir.Normalize() };
-					Ray lightRay{closestHit.origin + (closestHit.normal * 0.001f),lightDir};
-					lightRay.max = lightrayMagnitude;
-					if (pScene->DoesHit(lightRay))
+					if (m_ShadowsEnabled)
 					{
-						finalColor *= 0.5f;
+						Ray lightRay{closestHit.origin + (closestHit.normal * 0.001f),lightDir};
+						lightRay.max = lightrayMagnitude;
+						if (pScene->DoesHit(lightRay))
+						{
+							finalColor *= 0.5f;
+							continue;
+						}
+					}
+
+					switch (m_CurrentLightingMode)
+					{
+					case LightingMode::ObservedArea:
+					{
+						float observedArea = Vector3::Dot(lightDir, closestHit.normal);
+						if (observedArea > 0)
+						{
+							finalColor += ColorRGB{ 1,1,1 } * observedArea;
+						}
+					}
+						break;
+					case LightingMode::Radiance:
+						finalColor += LightUtils::GetRadiance(lights[i], closestHit.origin);
+						break;
+					case LightingMode::BRDF:
+						finalColor += materials[closestHit.materialIndex]->Shade(closestHit,lightDir,viewRay.direction);
+						break;
+					case LightingMode::Combined:
+					{
+						float observedArea = Vector3::Dot(lightDir, closestHit.normal);
+						if (observedArea > 0)
+						{
+							finalColor += LightUtils::GetRadiance(lights[i], closestHit.origin) * observedArea * materials[closestHit.materialIndex]->Shade(closestHit, lightDir, viewRay.direction);
+						}
+						
+					}
+						break;
 					}
 				}
 			}
@@ -99,7 +129,48 @@ void Renderer::Render(Scene* pScene) const
 	SDL_UpdateWindowSurface(m_pWindow);
 }
 
+void dae::Renderer::Update(dae::Timer* pTimer)
+{
+	//Keyboard Input
+	const uint8_t* pKeyboardState = SDL_GetKeyboardState(nullptr);
+
+	if (pKeyboardState[SDL_SCANCODE_F2])
+	{
+		if (!m_F2Held) ToggleShadows();
+		m_F2Held = true;
+	}
+	else m_F2Held = false;
+	if (pKeyboardState[SDL_SCANCODE_F3])
+	{
+		if (!m_F3Held) CycleLightingMode();
+		m_F3Held = true;
+	}
+	else m_F3Held = false;
+}
+
 bool Renderer::SaveBufferToImage() const
 {
 	return SDL_SaveBMP(m_pBuffer, "RayTracing_Buffer.bmp");
+}
+
+void dae::Renderer::CycleLightingMode()
+{
+	m_CurrentLightingMode = static_cast<LightingMode>((static_cast<int>(m_CurrentLightingMode) + 1) % 4);
+	std::cout << "Current Mode: ";
+	switch (m_CurrentLightingMode)
+	{
+	case LightingMode::BRDF:
+		std::cout << "BRDF";
+		break;
+	case LightingMode::ObservedArea:
+		std::cout << "ObservedArea";
+		break;
+	case LightingMode::Radiance:
+		std::cout << "Radiance";
+		break;
+	case LightingMode::Combined:
+		std::cout << "Combined";
+		break;
+	}
+	std::cout << '\n';
 }
