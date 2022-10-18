@@ -118,15 +118,7 @@ namespace dae
 		//Direction from target to light
 		inline Vector3 GetDirectionToLight(const Light& light, const Vector3& origin)
 		{
-			switch (light.type)
-			{
-			case LightType::Point:
-				return (light.origin - origin);
-				break;
-			case LightType::Directional:
-				return ((light.origin - origin) * FLT_MAX);
-				break;
-			}
+			return (light.origin - origin).Normalized();
 
 			//todo W3
 			assert(false && "No Implemented Yet!");

@@ -78,7 +78,7 @@ void Renderer::Render(Scene* pScene) const
 						lightRay.max = lightrayMagnitude;
 						if (pScene->DoesHit(lightRay))
 						{
-							finalColor *= 0.5f;
+							//finalColor *= 0.5f;
 							continue;
 						}
 					}
