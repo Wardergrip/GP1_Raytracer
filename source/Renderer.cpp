@@ -87,7 +87,7 @@ void Renderer::Render(Scene* pScene) const
 					{
 					case LightingMode::ObservedArea:
 					{
-						float observedArea = Vector3::Dot(lightDir, closestHit.normal);
+						float observedArea = Vector3::DotClamp(lightDir, closestHit.normal);
 						if (observedArea > 0)
 						{
 							finalColor += ColorRGB{ 1,1,1 } * observedArea;
@@ -102,7 +102,7 @@ void Renderer::Render(Scene* pScene) const
 						break;
 					case LightingMode::Combined:
 					{
-						float observedArea = Vector3::Dot(lightDir, closestHit.normal);
+						float observedArea = Vector3::DotClamp(lightDir, closestHit.normal);
 						if (observedArea > 0)
 						{
 							finalColor += LightUtils::GetRadiance(lights[i], closestHit.origin) * observedArea * materials[closestHit.materialIndex]->Shade(closestHit, lightDir, viewRay.direction);
