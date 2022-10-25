@@ -74,7 +74,6 @@ void Renderer::Render(Scene* pScene) const
 					}
 
 					float observedArea = Vector3::DotClamp(lightDir, closestHit.normal);
-					if (observedArea < 0) continue;
 					switch (m_CurrentLightingMode)
 					{
 					case LightingMode::ObservedArea:
