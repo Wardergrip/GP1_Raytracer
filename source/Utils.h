@@ -41,12 +41,7 @@ namespace dae
 					return true;
 				}
 				hitRecord.didHit = false;
-				return false;
 			}
-
-			
-			//todo W1
-			assert(false && "No Implemented Yet!");
 			return false;
 		}
 
@@ -72,8 +67,6 @@ namespace dae
 			}
 			hitRecord.didHit = false;
 			return false;
-			assert(false && "No Implemented Yet!");
-			return false;
 		}
 
 		inline bool HitTest_Plane(const Plane& plane, const Ray& ray)
@@ -86,9 +79,71 @@ namespace dae
 		//TRIANGLE HIT-TESTS
 		inline bool HitTest_Triangle(const Triangle& triangle, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
-			//todo W5
-			assert(false && "No Implemented Yet!");
-			return false;
+			TriangleCullMode cullMode{ triangle.cullMode };
+			if (ignoreHitRecord)
+			{
+				switch (triangle.cullMode)
+				{
+				case TriangleCullMode::BackFaceCulling:
+					cullMode = TriangleCullMode::FrontFaceCulling;
+					break;
+				case TriangleCullMode::FrontFaceCulling:
+					cullMode = TriangleCullMode::BackFaceCulling;
+					break;
+				}
+			}
+			switch (cullMode)
+			{
+			case TriangleCullMode::BackFaceCulling:
+				if (Vector3::Dot(triangle.normal, ray.direction) > 0)
+				{
+					return false;
+				}
+				break;
+			case TriangleCullMode::FrontFaceCulling:
+				if (Vector3::Dot(triangle.normal, ray.direction) < 0)
+				{
+					return false;
+				}
+				break;
+			case TriangleCullMode::NoCulling:
+				break;
+			}
+			
+			Vector3 center = ((triangle.v0 + triangle.v1 + triangle.v2) / 3);
+			Vector3 a{ triangle.v1 - triangle.v0 };
+			Vector3 b{ triangle.v2 - triangle.v0 };
+			Vector3 normal = Vector3::Cross(a, b);
+			if (Vector3::Dot(normal, ray.direction) == 0)
+				return false;
+			Vector3 L{ center - ray.origin };
+			float t = Vector3::Dot(L, normal) / Vector3::Dot(ray.direction, normal);
+			if (t < ray.min || t > ray.max)
+				return false;
+			Vector3 p = ray.origin + t * ray.direction;
+
+			Vector3 c{ p - triangle.v0 };
+
+			Vector3 edgeA{ triangle.v1 - triangle.v0 };
+			Vector3 edgeB{ triangle.v2 - triangle.v1 };
+			Vector3 edgeC{ triangle.v0 - triangle.v2 };
+			Vector3 pointToSide{ p - triangle.v0 };
+			if (Vector3::Dot(normal, Vector3::Cross(edgeA, pointToSide)) < 0)
+				return false;
+			pointToSide = p - triangle.v1;
+			if (Vector3::Dot(normal, Vector3::Cross(edgeB, pointToSide)) < 0)
+				return false;
+			pointToSide = p - triangle.v2;
+			if (Vector3::Dot(normal, Vector3::Cross(edgeC, pointToSide)) < 0)
+				return false;
+			
+			//Fill in HitRecord
+			hitRecord.didHit = true;
+			hitRecord.materialIndex = triangle.materialIndex;
+			hitRecord.normal = triangle.normal;
+			hitRecord.t = t;
+			hitRecord.origin = p;
+			return true;
 		}
 
 		inline bool HitTest_Triangle(const Triangle& triangle, const Ray& ray)
@@ -100,9 +155,24 @@ namespace dae
 #pragma region TriangeMesh HitTest
 		inline bool HitTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
-			//todo W5
-			assert(false && "No Implemented Yet!");
-			return false;
+			if (mesh.indices.size() % 3) return false;
+
+			bool hitAtleastOne{ false };
+			size_t amountOfTriangles{ mesh.indices.size() / 3 };
+			for (size_t i{ 0 }; i < amountOfTriangles; ++i)
+			{
+				const size_t index{ (i * 3) };
+
+				Triangle triangle{ mesh.transformedPositions[mesh.indices[index]], mesh.transformedPositions[mesh.indices[index + 1]], mesh.transformedPositions[mesh.indices[index + 2]] };
+				triangle.cullMode = mesh.cullMode; 
+				triangle.materialIndex = mesh.materialIndex;
+				triangle.normal = mesh.transformedNormals[i];
+				if (HitTest_Triangle(triangle, ray, hitRecord, ignoreHitRecord))
+				{
+					hitAtleastOne = true;
+				}
+			}
+			return hitAtleastOne;
 		}
 
 		inline bool HitTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray)
@@ -124,13 +194,9 @@ namespace dae
 				return (light.origin - origin);
 				break;
 			case LightType::Directional:
-				return ((light.origin - origin) * FLT_MAX);
+				return (light.origin - origin);
 				break;
 			}
-
-			//todo W3
-			assert(false && "No Implemented Yet!");
-			return {};
 		}
 
 		inline ColorRGB GetRadiance(const Light& light, const Vector3& target)
@@ -144,9 +210,6 @@ namespace dae
 				return {light.color * light.intensity};
 				break;
 			}
-			//todo W3
-			assert(false && "No Implemented Yet!");
-			return {};
 		}
 	}
 
