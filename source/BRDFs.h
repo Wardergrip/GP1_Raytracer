@@ -44,8 +44,7 @@ namespace dae
 				PSR = ks * (powf(alfa, exp));
 			}
 			return {PSR,PSR,PSR};
-			//todo: W3
-			return {};
+
 		}
 
 		/**
@@ -103,12 +102,14 @@ namespace dae
 		 * \param v Normalized view direction
 		 * \param l Normalized light direction
 		 * \param roughness Roughness of the material
-		 * \return BRDF Geometry Term using Smith (> SchlickGGX(n,v,roughness) * SchlickGGX(n,l,roughness))
+		 * \return BRDF Geometry Term using Smisth (> SchlickGGX(n,v,roughness) * SchlickGGX(n,l,roughness))
 		 */
 		static float GeometryFunction_Smith(const Vector3& n, const Vector3& v, const Vector3& l, float roughness)
 		{
-			//todo: W3
-			return {};
+			float ggx1 = GeometryFunction_SchlickGGX(n, v, roughness);
+			float ggx2 = GeometryFunction_SchlickGGX(n, l, roughness);
+
+			return ggx1 * ggx2;
 		}
 
 	}
