@@ -36,8 +36,7 @@ namespace dae
 		 */
 		static ColorRGB Phong(float ks, float exp, const Vector3& l, const Vector3& v, const Vector3& n)
 		{
-			Vector3 reflect = l.Reflect(l, n);
-			reflect.Normalize();
+			Vector3 reflect = Vector3::Reflect(l, n);
 			float alfa = Vector3::DotClamp(reflect, v);
 			float PSR{};
 			if (alfa > 0)
@@ -74,7 +73,7 @@ namespace dae
 		{
 			const float alfa = roughness * roughness;
 			const float alfaSqrd = alfa * alfa;
-			const float nhSqrd = (Vector3::DotClamp(n, h) * Vector3::DotClamp(n, h));
+			const float nhSqrd = Square(Vector3::DotClamp(n, h));
 			const float NormalDis = alfaSqrd / (PI * ((nhSqrd * (alfaSqrd - 1) + 1) * (nhSqrd * (alfaSqrd - 1) + 1)));
 			return NormalDis;
 			//todo: W3

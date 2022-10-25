@@ -34,15 +34,6 @@ void Renderer::Render(Scene* pScene) const
 	{
 		for (int py{}; py < m_Height; ++py)
 		{
-#pragma region OriginalGradient
-#if 0
-			float gradient = px / static_cast<float>(m_Width);
-			gradient += py / static_cast<float>(m_Width);
-			gradient /= 2.0f;
-
-			ColorRGB finalColor{ gradient, gradient, gradient };
-#endif
-#pragma endregion
 			// Cameraspace
 			float screenWidth{ static_cast<float>(m_Width) }, screenHeight{ static_cast<float>(m_Height) };
 			float aspectRatio{ screenWidth / screenHeight };
@@ -78,21 +69,19 @@ void Renderer::Render(Scene* pScene) const
 						lightRay.max = lightrayMagnitude;
 						if (pScene->DoesHit(lightRay))
 						{
-							finalColor *= 0.5f;
 							continue;
 						}
 					}
 
+					float observedArea = Vector3::DotClamp(lightDir, closestHit.normal);
+					if (observedArea < 0) continue;
 					switch (m_CurrentLightingMode)
 					{
 					case LightingMode::ObservedArea:
-					{
-						float observedArea = Vector3::DotClamp(lightDir, closestHit.normal);
 						if (observedArea > 0)
 						{
 							finalColor += ColorRGB{ 1,1,1 } * observedArea;
 						}
-					}
 						break;
 					case LightingMode::Radiance:
 						finalColor += LightUtils::GetRadiance(lights[i], closestHit.origin);
@@ -101,14 +90,10 @@ void Renderer::Render(Scene* pScene) const
 						finalColor += materials[closestHit.materialIndex]->Shade(closestHit,lightDir,viewRay.direction);
 						break;
 					case LightingMode::Combined:
-					{
-						float observedArea = Vector3::DotClamp(lightDir, closestHit.normal);
 						if (observedArea > 0)
 						{
 							finalColor += LightUtils::GetRadiance(lights[i], closestHit.origin) * observedArea * materials[closestHit.materialIndex]->Shade(closestHit, lightDir, viewRay.direction);
 						}
-						
-					}
 						break;
 					}
 				}
