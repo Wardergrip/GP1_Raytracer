@@ -421,6 +421,7 @@ namespace dae {
 
 		m_pBunny->Scale({ 2.f,2.f,2.f });
 
+		m_pBunny->UpdateAABB();
 		m_pBunny->UpdateTransforms();
 
 

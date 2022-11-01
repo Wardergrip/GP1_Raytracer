@@ -76,6 +76,30 @@ namespace dae
 		}
 #pragma endregion
 #pragma region Triangle HitTest
+		inline bool SlabTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray)
+		{
+			const Vector3 inversedDirection = { 1.f / ray.direction.x,1.f / ray.direction.y,1.f / ray.direction.z };
+			const float tx1 = (mesh.transformedMinAABB.x - ray.origin.x) * inversedDirection.x;
+			const float tx2 = (mesh.transformedMaxAABB.x - ray.origin.x) * inversedDirection.x;
+
+			float tmin = std::min(tx1, tx2);
+			float tmax = std::max(tx1, tx2);
+
+			const float ty1 = (mesh.transformedMinAABB.y - ray.origin.y) * inversedDirection.y;
+			const float ty2 = (mesh.transformedMaxAABB.y - ray.origin.y) * inversedDirection.y;
+
+			tmin = std::max(tmin, std::min(ty1, ty2));
+			tmax = std::min(tmax, std::max(ty1, ty2));
+
+			const float tz1 = (mesh.transformedMinAABB.z - ray.origin.z) * inversedDirection.z;
+			const float tz2 = (mesh.transformedMaxAABB.z - ray.origin.z) * inversedDirection.z;
+
+			tmin = std::max(tmin, std::min(tz1, tz2));
+			tmax = std::min(tmax, std::max(tz1, tz2));
+
+			return tmax > 0 && tmax >= tmin;
+		}
+
 		//TRIANGLE HIT-TESTS
 		inline bool HitTest_Triangle(const Triangle& triangle, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
@@ -157,13 +181,20 @@ namespace dae
 		{
 			if (mesh.indices.size() % 3) return false;
 
+			// Slabtest
+			if (!SlabTest_TriangleMesh(mesh, ray))
+			{
+				return false;
+			}
+
 			bool hitAtleastOne{ false };
 			size_t amountOfTriangles{ mesh.indices.size() / 3 };
+			Triangle triangle;
 			for (size_t i{ 0 }; i < amountOfTriangles; ++i)
 			{
 				const size_t index{ (i * 3) };
 
-				Triangle triangle{ mesh.transformedPositions[mesh.indices[index]], mesh.transformedPositions[mesh.indices[index + 1]], mesh.transformedPositions[mesh.indices[index + 2]] };
+				triangle = { mesh.transformedPositions[mesh.indices[index]], mesh.transformedPositions[mesh.indices[index + 1]], mesh.transformedPositions[mesh.indices[index + 2]] };
 				triangle.cullMode = mesh.cullMode; 
 				triangle.materialIndex = mesh.materialIndex;
 				triangle.normal = mesh.transformedNormals[i];
