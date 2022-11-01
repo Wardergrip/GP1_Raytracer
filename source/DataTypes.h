@@ -141,7 +141,8 @@ namespace dae
 		{
 			//Calculate Final Transform 
 			//const auto finalTransform = ...
-			const auto TRS = translationTransform * rotationTransform * scaleTransform;
+			const auto TRS = scaleTransform * rotationTransform * translationTransform;
+			const auto unscaledTRS = rotationTransform * translationTransform;
 
 			transformedPositions.clear();
 			transformedPositions.reserve(positions.size());
@@ -156,7 +157,7 @@ namespace dae
 			//Transform Normals (normals > transformedNormals)
 			for (Vector3& normal : normals)
 			{
-				transformedNormals.emplace_back(TRS.TransformVector(normal));
+				transformedNormals.emplace_back(unscaledTRS.TransformVector(normal));
 			}
 		}
 	};

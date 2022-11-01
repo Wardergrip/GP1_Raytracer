@@ -174,7 +174,6 @@ namespace dae
 	{
 	public:
 		Scene_W4_BunnyScene() = default;
-		~Scene_W4_BunnyScene() override;
 
 		Scene_W4_BunnyScene(const Scene_W4_BunnyScene&) = delete;
 		Scene_W4_BunnyScene(Scene_W4_BunnyScene&&) noexcept = delete;
@@ -182,6 +181,7 @@ namespace dae
 		Scene_W4_BunnyScene& operator=(Scene_W4_BunnyScene&&) noexcept = delete;
 
 		void Initialize() override;
+		void Update(Timer* pTimer) override;
 	private:
 		TriangleMesh* m_pBunny{ nullptr };
 	};

@@ -21,6 +21,7 @@ namespace dae
 
 		Vector3 origin{};
 		float fovAngle{90.f};
+		float fovMultiplier{ 1.0f };
 
 		Vector3 forward{Vector3::UnitZ};
 		Vector3 up{Vector3::UnitY};
@@ -40,11 +41,11 @@ namespace dae
 			- Combine to a matrix(also include origin) and return
 			*/
 
-			right = Vector3::Cross(Vector3::UnitY,forward).Normalized();
-			up = Vector3::Cross(forward,right).Normalized();
+			right = Vector3::Cross(Vector3::UnitY,forward);
+			up = Vector3::Cross(forward,right);
 			// https://gamedev.net/forums/topic/388559-getting-a-up-vector-from-only-having-a-forward-vector/.
 
-			Matrix cameraToWorld
+			cameraToWorld =
 			{
 				right,
 				up,
@@ -54,10 +55,12 @@ namespace dae
 			
 
 			return cameraToWorld;
+		}
 
-			//todo: W2
-			assert(false && "Not Implemented Yet");
-			return {};
+		void SetFovAngle(float newFovAngle)
+		{
+			fovAngle = newFovAngle;
+			fovMultiplier = tanf(TO_RADIANS * newFovAngle / 2.0f);
 		}
 
 		void Update(Timer* pTimer)
@@ -80,7 +83,7 @@ namespace dae
 #pragma endregion 
 
 #pragma region FovControls
-			if (pKeyboardState[SDL_SCANCODE_LEFT])
+			/*if (pKeyboardState[SDL_SCANCODE_LEFT])
 			{
 				if (fovAngle > 10)
 				{
@@ -93,23 +96,23 @@ namespace dae
 				{
 					fovAngle += fovChangingSpeed * deltaTime;
 				}
-			}
+			}*/
 #pragma endregion 
 
 #pragma region KeyboardOnly Controls
-			if (pKeyboardState[SDL_SCANCODE_W])
+			if (pKeyboardState[SDL_SCANCODE_W] || pKeyboardState[SDL_SCANCODE_UP])
 			{
 				origin += forward * movementSpeed;
 			}
-			else if (pKeyboardState[SDL_SCANCODE_S])
+			else if (pKeyboardState[SDL_SCANCODE_S] || pKeyboardState[SDL_SCANCODE_DOWN])
 			{
 				origin -= forward * movementSpeed;
 			}
-			if (pKeyboardState[SDL_SCANCODE_D])
+			if (pKeyboardState[SDL_SCANCODE_D] || pKeyboardState[SDL_SCANCODE_RIGHT])
 			{
 				origin += right * movementSpeed;
 			}
-			else if (pKeyboardState[SDL_SCANCODE_A])
+			else if (pKeyboardState[SDL_SCANCODE_A] || pKeyboardState[SDL_SCANCODE_LEFT])
 			{
 				origin -= right * movementSpeed;
 			}
