@@ -145,9 +145,6 @@ namespace dae
 				forward = Matrix::CreateRotationX(-mouseY * rotationSpeed).TransformVector(forward) ;
 			}
 #pragma endregion
-
-			//todo: W2
-			//assert(false && "Not Implemented Yet");
 		}
 	};
 }

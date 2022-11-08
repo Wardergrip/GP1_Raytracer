@@ -382,6 +382,11 @@ namespace dae {
 		m_pMeshes[2]->Translate({ 1.75f, 4.5f, 0.0f });
 		m_pMeshes[2]->UpdateTransforms();
 
+		for (auto& mesh : m_pMeshes)
+		{
+			mesh->UpdateAABB();
+		}
+
 		//Light
 		AddPointLight(Vector3{ 0.0f, 5.0f, 5.0f }, 50.f, ColorRGB{ 1.0f, 0.61f, 0.45f }); // Backlight
 		AddPointLight(Vector3{ -2.5f, 5.0f, -5.0f }, 70.f, ColorRGB{ 1.0f, 0.8f, 0.45f }); // Frontlight left
@@ -396,6 +401,12 @@ namespace dae {
 		{
 			m->RotateY(yawAngle);
 			m->UpdateTransforms();
+		}
+
+		for (auto& mesh : m_pMeshes)
+		{
+			mesh->UpdateAABB();
+			mesh->UpdateTransforms();
 		}
 	}
 

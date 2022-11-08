@@ -154,13 +154,13 @@ namespace dae
 			transformedPositions.reserve(positions.size());
 			transformedNormals.clear();
 			transformedNormals.reserve(normals.size());
-			//Transform Positions (positions > transformedPositions)
+			// Transform Positions (positions > transformedPositions)
 			for (Vector3& position : positions)
 			{
 				transformedPositions.emplace_back(TRS.TransformPoint(position));
 			}
 
-			//Transform Normals (normals > transformedNormals)
+			// Transform Normals (normals > transformedNormals)
 			for (Vector3& normal : normals)
 			{
 				transformedNormals.emplace_back(unscaledTRS.TransformVector(normal));

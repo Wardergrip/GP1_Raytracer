@@ -125,18 +125,25 @@ void dae::Renderer::RenderPixel(Scene* pScene, unsigned int pixelIndex, const Ca
 
 	// Hitrecord containing more information about a potential hit
 	HitRecord closestHit{};
+	// Get the closest object that interesected with the ray
 	pScene->GetClosestHit(viewRay, closestHit);
 
+	// If we hit anything 
 	if (closestHit.didHit)
 	{
+		// Go over all Lights
 		for (size_t i{ 0 }; i < lights.size(); ++i)
 		{
+			// Get a ray from the point we hit, to the light and add a small offset
 			Vector3 lightDir = LightUtils::GetDirectionToLight(lights[i], closestHit.origin + (closestHit.normal * 0.001f));
 			const float lightrayMagnitude{ lightDir.Normalize() };
 			if (m_ShadowsEnabled)
 			{
 				Ray lightRay{ closestHit.origin + (closestHit.normal * 0.001f),lightDir };
 				lightRay.max = lightrayMagnitude;
+				// If we hit something in the scene from the point we hit towards the light
+				// it means there is an  object obstructing the ray
+				// this means we are at a shadow
 				if (pScene->DoesHit(lightRay))
 				{
 					continue;
@@ -149,7 +156,7 @@ void dae::Renderer::RenderPixel(Scene* pScene, unsigned int pixelIndex, const Ca
 			case LightingMode::ObservedArea:
 				if (observedArea > 0)
 				{
-					finalColor += ColorRGB{ 1,1,1 } *observedArea;
+					finalColor += ColorRGB{ 1,1,1 } * observedArea;
 				}
 				break;
 			case LightingMode::Radiance:

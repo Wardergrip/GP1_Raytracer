@@ -4,6 +4,8 @@
 #include "Math.h"
 #include "DataTypes.h"
 
+#define MOLLER_TRUMBORE
+
 namespace dae
 {
 	namespace GeometryUtils
@@ -133,7 +135,40 @@ namespace dae
 			case TriangleCullMode::NoCulling:
 				break;
 			}
-			
+#ifdef MOLLER_TRUMBORE
+			// Source: https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
+
+			Vector3 edge1, edge2, h, s, q;
+			float a, f, u, v;
+			edge1 = triangle.v1 - triangle.v0;
+			edge2 = triangle.v2 - triangle.v0;
+			h = Vector3::Cross(ray.direction, edge2);
+			a = Vector3::Dot(edge1, h);
+			if (a > -FLT_EPSILON && a < FLT_EPSILON)
+				return false;    // This ray is parallel to this triangle.
+			f = 1.0 / a;
+			s = ray.origin - triangle.v0;
+			u = f * Vector3::Dot(s, h);
+			if (u < 0.0 || u > 1.0)
+				return false;
+			q = Vector3::Cross(s, edge1);
+			v = f * Vector3::Dot(ray.direction, q);
+			if (v < 0.0 || u + v > 1.0)
+				return false;
+			// At this stage we can compute t to find out where the intersection point is on the line.
+			float t = f * Vector3::Dot(edge2, q);
+			if (t > ray.min && t < ray.max) // ray intersection
+			{
+				hitRecord.origin = ray.origin + ray.direction * t;
+				hitRecord.didHit = true;
+				hitRecord.materialIndex = triangle.materialIndex;
+				hitRecord.normal = triangle.normal;
+				hitRecord.t = t;
+				return true;
+			}
+			else // This means that there is a line intersection but not a ray intersection.
+				return false;
+#else // No Moller Trumbore
 			Vector3 center = ((triangle.v0 + triangle.v1 + triangle.v2) / 3);
 			Vector3 a{ triangle.v1 - triangle.v0 };
 			Vector3 b{ triangle.v2 - triangle.v0 };
@@ -168,6 +203,7 @@ namespace dae
 			hitRecord.t = t;
 			hitRecord.origin = p;
 			return true;
+#endif
 		}
 
 		inline bool HitTest_Triangle(const Triangle& triangle, const Ray& ray)
@@ -186,7 +222,9 @@ namespace dae
 			{
 				return false;
 			}
-
+			HitRecord smallestTRecord;
+			smallestTRecord.t = FLT_MAX;
+			HitRecord currentRecord;
 			bool hitAtleastOne{ false };
 			size_t amountOfTriangles{ mesh.indices.size() / 3 };
 			Triangle triangle;
@@ -198,11 +236,16 @@ namespace dae
 				triangle.cullMode = mesh.cullMode; 
 				triangle.materialIndex = mesh.materialIndex;
 				triangle.normal = mesh.transformedNormals[i];
-				if (HitTest_Triangle(triangle, ray, hitRecord, ignoreHitRecord))
+				if (HitTest_Triangle(triangle, ray, currentRecord, ignoreHitRecord))
 				{
+					if (currentRecord.t < smallestTRecord.t)
+					{
+						smallestTRecord = currentRecord;
+					}
 					hitAtleastOne = true;
 				}
 			}
+			hitRecord = smallestTRecord;
 			return hitAtleastOne;
 		}
 
