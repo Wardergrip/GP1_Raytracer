@@ -5,6 +5,13 @@
 #include "Vector4.h"
 #include <cmath>
 
+#define SSE_Intrinsics
+
+#ifdef SSE_Intrinsics
+#include <xmmintrin.h>
+#endif // SSE_Intrinsics
+
+
 namespace dae {
 	const Vector3 Vector3::UnitX = Vector3{ 1, 0, 0 };
 	const Vector3 Vector3::UnitY = Vector3{ 0, 1, 0 };
@@ -19,7 +26,12 @@ namespace dae {
 
 	float Vector3::Magnitude() const
 	{
+#ifdef SSE_Intrinsics
+		//https ://geometrian.com/programming/tutorials/fastsqrt/index.php
+		return _mm_cvtss_f32(_mm_sqrt_ss(_mm_set_ps1(x * x + y * y + z * z)));
+#else
 		return sqrtf(x * x + y * y + z * z);
+#endif
 	}
 
 	float Vector3::SqrMagnitude() const
@@ -46,9 +58,6 @@ namespace dae {
 	float Vector3::Dot(const Vector3& v1, const Vector3& v2)
 	{
 		return ((v1.x * v2.x) + (v1.y * v2.y) + (v1.z * v2.z));
-
-		assert(false && "Not Implemented Yet");
-		return {};
 	}
 
 	float Vector3::DotClamp(const Vector3& v1, const Vector3& v2)
@@ -59,9 +68,6 @@ namespace dae {
 	Vector3 Vector3::Cross(const Vector3& v1, const Vector3& v2)
 	{
 		return Vector3{(v1.y*v2.z)-(v1.z*v2.y),-((v1.x*v2.z)-(v1.z*v2.x)),(v1.x*v2.y)-(v1.y*v2.x)};
-
-		assert(false && "Not Implemented Yet");
-		return {};
 	}
 
 	Vector3 Vector3::Project(const Vector3& v1, const Vector3& v2)
